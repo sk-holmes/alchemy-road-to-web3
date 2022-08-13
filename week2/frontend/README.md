@@ -1,3 +1,9 @@
+
+### Replit link
+
+https://replit.com/@daiguren/BuyMeACoffee-Solidity-DeFi-Tipping-app#pages/index.jsx
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
