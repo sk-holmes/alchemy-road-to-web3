@@ -5,6 +5,10 @@ import Image from 'next/image'
 import React, { useEffect, useState } from "react";
 import styles from '../styles/Home.module.css'
 
+export function keepFirstDecimal(s) {
+  return s.split('').reverse().join('').replace(/[^-?0-9.]|\.(?=.*\.)/g, '').split('').reverse().join('');
+};
+
 export default function Home() {
   // Contract Address & ABI
   const contractAddress = "0xC7405113ddB0Bd39725928A30dD335f9940d6926";
@@ -14,6 +18,7 @@ export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [customCoffeeVal, setCustomCoffeeVal] = useState("");
   const [memos, setMemos] = useState([]);
 
   const onNameChange = (event) => {
@@ -22,6 +27,10 @@ export default function Home() {
 
   const onMessageChange = (event) => {
     setMessage(event.target.value);
+  }
+
+  const onCustomCoffeeValChange = (event) => {
+    setCustomCoffeeVal(keepFirstDecimal(event.target.value));
   }
 
   // Wallet connection logic
@@ -61,7 +70,7 @@ export default function Home() {
     }
   }
 
-  const buyCoffee = async () => {
+  const buyCoffee = async (amount = '0.001') => {
     try {
       const { ethereum } = window;
 
@@ -78,7 +87,7 @@ export default function Home() {
         const coffeeTxn = await buyMeACoffee.buyCoffee(
           name ? name : "anon",
           message ? message : "Enjoy your coffee!",
-          { value: ethers.utils.parseEther("0.001") }
+          { value: ethers.utils.parseEther(keepFirstDecimal(amount)) }
         );
 
         await coffeeTxn.wait();
@@ -215,6 +224,28 @@ export default function Home() {
                   onClick={buyCoffee}
                 >
                   Send 1 Coffee for 0.001ETH
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={e => buyCoffee("0.003")}
+                >
+                  Send Large Coffee for 0.003ETH
+                </button>
+              </div>
+              <div>
+                <input
+                  id="customVal"
+                  type="text"
+                  placeholder="0.1"
+                  onChange={onCustomCoffeeValChange}
+                />
+                <button
+                  type="button"
+                  onClick={e => buyCoffee(customCoffeeVal)}
+                >
+                  Send Custom Coffees
                 </button>
               </div>
             </form>
