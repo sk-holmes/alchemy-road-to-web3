@@ -25,6 +25,28 @@ contract BuyMeACoffee {
     // deployer addr
     address payable owner;
 
+    // From: https://docs.soliditylang.org/en/v0.8.16/common-patterns.html
+
+    /// Sender not authorized for this
+    /// operation.
+    error Unauthorized();
+
+    // Modifiers can be used to change
+    // the body of a function.
+    // If this modifier is used, it will
+    // prepend a check that only passes
+    // if the function is called from
+    // a certain address.
+    modifier onlyBy(address account)
+    {
+        if (msg.sender != account)
+            revert Unauthorized();
+        // Do not forget the "_;"! It will
+        // be replaced by the actual function
+        // body when the modifier is used.
+        _;
+    }
+
     constructor() {
         owner = payable(msg.sender);
     }
@@ -51,8 +73,8 @@ contract BuyMeACoffee {
     /**
      * @dev Withdraw entire balance to owner.
      */
-    function withdrawTips() public {
-        require(owner.send(address(this).balance));
+    function withdrawTips(address payable toAddr) public onlyBy(owner) {
+        require(toAddr.send(address(this).balance));
     }
 
     /**
