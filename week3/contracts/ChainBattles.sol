@@ -12,13 +12,35 @@ contract ChainBattles is ERC721URIStorage {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
 
-  mapping(uint256 => uint256) public tokenIdToLevels;
+  struct NFTAttributes {
+    uint256 level;
+    uint256 speed;
+    uint256 strength;
+    uint256 life;
+  }
+
+  mapping(uint256 => NFTAttributes) public tokenIdToAttrs;
 
   constructor() ERC721("Chain Battles", "CBTLS") {}
 
-  function getLevels (uint256 tokenId) public view returns (string memory) {
-    uint256 levels = tokenIdToLevels[tokenId];
-    return levels.toString();
+  function getLevel (uint256 tokenId) public view returns (string memory) {
+    uint256 level = tokenIdToAttrs[tokenId].level;
+    return level.toString();
+  }
+
+  function getSpeed (uint256 tokenId) public view returns (string memory) {
+    uint256 speed = tokenIdToAttrs[tokenId].speed;
+    return speed.toString();
+  }
+
+  function getStrength (uint256 tokenId) public view returns (string memory) {
+    uint256 strength = tokenIdToAttrs[tokenId].strength;
+    return strength.toString();
+  }
+  
+  function getLife (uint256 tokenId) public view returns (string memory) {
+    uint256 life = tokenIdToAttrs[tokenId].life;
+    return life.toString();
   }
 
   function generateCharacter(uint256 tokenId) public returns(string memory){
@@ -26,8 +48,11 @@ contract ChainBattles is ERC721URIStorage {
         '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">',
         '<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>',
         '<rect width="100%" height="100%" fill="black" />',
-        '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">',"Warrior",'</text>',
-        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevels(tokenId),'</text>',
+        '<text x="50%" y="30%" class="base" dominant-baseline="middle" text-anchor="middle">',"Warrior",'</text>',
+        '<text x="50%" y="40%" class="base" dominant-baseline="middle" text-anchor="middle">', "Levels: ",getLevel(tokenId),'</text>',
+        '<text x="50%" y="50%" class="base" dominant-baseline="middle" text-anchor="middle">', "Speed: ",getSpeed(tokenId),'</text>',
+        '<text x="50%" y="60%" class="base" dominant-baseline="middle" text-anchor="middle">', "Strength: ",getStrength(tokenId),'</text>',
+        '<text x="50%" y="70%" class="base" dominant-baseline="middle" text-anchor="middle">', "Life: ",getLife(tokenId),'</text>',
         '</svg>'
     );
     return string(
@@ -58,15 +83,21 @@ contract ChainBattles is ERC721URIStorage {
     _tokenIds.increment();
     uint256 newItemId = _tokenIds.current();
     _safeMint(msg.sender, newItemId);
-    tokenIdToLevels[newItemId] = 0;
+    NFTAttributes memory attrs = NFTAttributes(1, 10, 10, 1);
+    tokenIdToAttrs[newItemId] = attrs;
     _setTokenURI(newItemId, getTokenURI(newItemId));
   }
 
   function train(uint256 tokenId) public {
     require(_exists(tokenId), "Use an existing token");
     require(ownerOf(tokenId) == msg.sender, "Only owner can train");
-    uint256 currentLevel = tokenIdToLevels[tokenId];
-    tokenIdToLevels[tokenId] = currentLevel + 1;
+    NFTAttributes memory currentAttrs = tokenIdToAttrs[tokenId];
+    tokenIdToAttrs[tokenId] = NFTAttributes(
+      currentAttrs.level+1, 
+      currentAttrs.speed * currentAttrs.level * 2,
+      currentAttrs.strength * currentAttrs.level * 2,
+      currentAttrs.life + currentAttrs.level * 2
+    );
     _setTokenURI(tokenId, getTokenURI(tokenId));
   }
 }
