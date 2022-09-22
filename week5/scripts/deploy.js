@@ -1,18 +1,47 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
+
 const hre = require("hardhat");
 
-async function main() {
- 
+// Returns the Ether balance of a given address.
+async function getBalance(address) {
+  const balanceBigInt = await hre.waffle.provider.getBalance(address);
+  return hre.ethers.utils.formatEther(balanceBigInt);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// Logs the Ether balances for a list of addresses.
+async function printBalances(addresses) {
+  let idx = 0;
+  for (const address of addresses) {
+    console.log(`Address ${idx} balance: `, await getBalance(address));
+    idx++;
+  }
+}
+
+const main = async () => {
+  try {
+    const nftContractFactory = await hre.ethers.getContractFactory(
+      "BullBear"
+    );
+    const nftContract = await nftContractFactory.deploy();
+    await nftContract.deployed();
+
+    console.log("Contract deployed to:", nftContract.address);
+
+    // Check balances before the coffee purchase.
+    // Get the example accounts we'll be working with.
+    const [owner, first, second] = await hre.ethers.getSigners();
+    const addresses = [owner.address, first.address, second.address];
+    console.log("== start ==");
+    await printBalances(addresses);
+
+    await nftContract.connect(first).safeMint(first.address);
+
+    console.log(await nftContract.connect(first).tokenURI(0));
+
+    process.exit(0);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+};
+
+main();
