@@ -199,23 +199,6 @@ contract BullBear is ERC721, ERC721Enumerable, ERC721URIStorage, KeeperCompatibl
         COORDINATOR = VRFCoordinatorV2Interface(_address);
     }
   
-    function updateAllTokenUris(string memory trend) internal {
-        if (compareStrings("bear", trend)) {
-            console.log(" UPDATING TOKEN URIS WITH ", "bear", trend);
-            for (uint i = 0; i < _tokenIdCounter.current() ; i++) {
-                _setTokenURI(i, bearUrisIpfs[0]);
-            } 
-            
-        } else {     
-            console.log(" UPDATING TOKEN URIS WITH ", "bull", trend);
-
-            for (uint i = 0; i < _tokenIdCounter.current() ; i++) {
-                _setTokenURI(i, bullUrisIpfs[0]);
-            }  
-        }   
-        emit TokensUpdated(trend);
-    }
-
     function setPriceFeed(address newFeed) public onlyOwner {
         pricefeed = AggregatorV3Interface(newFeed);
     }
