@@ -11,9 +11,9 @@ contract Staker {
   mapping(address => uint256) public balances;
   mapping(address => uint256) public depositTimestamps;
 
-  uint256 public constant rewardRatePerSecond = 0.0001 ether;
-  uint256 public withdrawalDeadline = block.timestamp + 120 seconds;
-  uint256 public claimDeadline = block.timestamp + 240 seconds;
+  uint256 public constant rewardRatePerSecond = 0.000001 ether;
+  uint256 public withdrawalDeadline = block.timestamp + 60 seconds;
+  uint256 public claimDeadline = block.timestamp + 120 seconds;
   uint256 public currentBlock = 0;
 
   // Events
@@ -76,12 +76,17 @@ contract Staker {
     require(balances[msg.sender] > 0, "You have no balance to withdraw!");
     uint256 individualBalance = balances[msg.sender];
     // use exponential
-    uint256 indBalanceRewards = individualBalance + ((block.timestamp-depositTimestamps[msg.sender])*rewardRatePerSecond);
-    balances[msg.sender] = 0;
+    // uint256 indBalanceRewards = individualBalance + ((block.timestamp-depositTimestamps[msg.sender])*rewardRatePerSecond);
+    unchecked {
+      console.log(individualBalance * ( (1 + rewardRatePerSecond ) ** (block.timestamp-depositTimestamps[msg.sender]) );
+      uint256 indBalanceRewards = individualBalance * ( (1 + rewardRatePerSecond ) ** (block.timestamp-depositTimestamps[msg.sender]) );
 
-    // Transfer all ETH via call! (not transfer) cc: https://solidity-by-example.org/sending-ether
-    (bool sent, bytes memory data) = msg.sender.call{value: indBalanceRewards}("");
-    require(sent, "RIP; withdrawal failed :( ");
+      balances[msg.sender] = 0;
+    
+      // Transfer all ETH via call! (not transfer) cc: https://solidity-by-example.org/sending-ether
+      (bool sent, bytes memory data) = msg.sender.call{value: indBalanceRewards}("");
+      require(sent, "RIP; withdrawal failed :( ");
+    }
   }
 
   /*
@@ -90,7 +95,7 @@ contract Staker {
   */
   function execute() public claimDeadlineReached(true) notCompleted {
     uint256 contractBalance = address(this).balance;
-    exampleExternalContract.complete{value: address(this).balance}();
+    exampleExternalContract.complete{value: contractBalance}();
   }
 
   /*
